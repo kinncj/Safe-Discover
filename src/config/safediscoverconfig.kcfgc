@@ -1,0 +1,4 @@
+File=safediscoverconfig.kcfg
+ClassName=SafeDiscoverConfig
+Mutators=true
+Singleton=true

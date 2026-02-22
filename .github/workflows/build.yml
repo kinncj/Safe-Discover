@@ -1,0 +1,41 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    container: cachyos/cachyos-v3:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            base-devel cmake extra-cmake-modules gcc \
+            qt6-base qt6-declarative \
+            kirigami kirigami-addons \
+            kcoreaddons ki18n kconfig knewstuff \
+            polkit namcap
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Validate PKGBUILD
+        run: namcap PKGBUILD

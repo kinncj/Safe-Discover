@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ca.kinncj.SafeDiscover</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Safe Discover</name>
+  <summary>Browse, install, and update packages safely</summary>
+  <description>
+    <p>
+      Safe Discover is a Kirigami-based package management GUI for CachyOS and Arch Linux.
+      It supports pacman, paru (AUR), Flatpak, and fwupd firmware updates with safe,
+      explicit update actions and no PackageKit dependency.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/kinncj/Safe-Discover</url>
+  <provides>
+    <binary>safe-discover</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-02-22">
+      <description><p>Initial release.</p></description>
+    </release>
+  </releases>
+</component>

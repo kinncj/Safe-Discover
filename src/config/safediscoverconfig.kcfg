@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name="safediscoverrc"/>
+
+  <group name="Execution">
+    <entry name="PacmanExecMode" type="Int">
+      <label>Execution mode for pacman operations (0=Embedded, 1=Terminal)</label>
+      <default>0</default>
+    </entry>
+    <entry name="AurExecMode" type="Int">
+      <label>Execution mode for AUR operations (0=Embedded, 1=Terminal)</label>
+      <default>1</default>
+    </entry>
+    <entry name="FlatpakExecMode" type="Int">
+      <label>Execution mode for Flatpak operations (0=Embedded, 1=Terminal)</label>
+      <default>0</default>
+    </entry>
+    <entry name="FirmwareExecMode" type="Int">
+      <label>Execution mode for firmware operations (0=Embedded, 1=Terminal)</label>
+      <default>0</default>
+    </entry>
+    <entry name="FallbackToTerminal" type="Bool">
+      <label>Fall back to terminal if embedded execution fails</label>
+      <default>true</default>
+    </entry>
+  </group>
+
+  <group name="Flatpak">
+    <entry name="DefaultRemote" type="String">
+      <label>Default Flatpak remote</label>
+      <default>flathub</default>
+    </entry>
+  </group>
+
+  <group name="Search">
+    <entry name="SearchResultLimit" type="Int">
+      <label>Maximum number of search results to display</label>
+      <default>100</default>
+    </entry>
+  </group>
+
+  <group name="Logging">
+    <entry name="PersistLogs" type="Bool">
+      <label>Save logs to disk</label>
+      <default>false</default>
+    </entry>
+  </group>
+</kcfg>

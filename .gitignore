@@ -1,0 +1,30 @@
+# Build directories
+build/
+cmake-build-*/
+
+# makepkg artifacts
+pkg/
+src/build/
+*.pkg.tar.zst
+*.pkg.tar.xz
+*.pkg.tar.gz
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.qmlls.ini
+
+# Generated files
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*_autogen/
+
+# Claude Code
+.claude/
+
+CLAUDE.md

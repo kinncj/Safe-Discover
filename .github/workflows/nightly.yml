@@ -1,0 +1,168 @@
+name: Nightly
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  source:
+    name: Source tarball
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create source tarball
+        run: |
+          VERSION=$(grep 'project.*safe-discover' CMakeLists.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          COMMITS=$(git rev-list --count HEAD)
+          SHORT_HASH=$(git rev-parse --short HEAD)
+          NIGHTLY_VERSION="${VERSION}.r${COMMITS}.g${SHORT_HASH}"
+          echo "NIGHTLY_VERSION=${NIGHTLY_VERSION}" >> "$GITHUB_ENV"
+          git archive --format=tar.gz --prefix=safe-discover-${NIGHTLY_VERSION}/ \
+            -o safe-discover-${NIGHTLY_VERSION}.tar.gz HEAD
+
+      - name: Upload source tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-tarball
+          path: safe-discover-*.tar.gz
+
+  package-x86_64:
+    name: Package (x86_64)
+    runs-on: ubuntu-latest
+    container: cachyos/cachyos-v3:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            base-devel cmake extra-cmake-modules gcc \
+            qt6-base qt6-declarative \
+            kirigami kirigami-addons \
+            kcoreaddons ki18n kconfig knewstuff \
+            polkit
+
+      - name: Set nightly version
+        run: |
+          VERSION=$(grep 'project.*safe-discover' CMakeLists.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          COMMITS=$(git rev-list --count HEAD)
+          SHORT_HASH=$(git rev-parse --short HEAD)
+          NIGHTLY_VERSION="${VERSION}.r${COMMITS}.g${SHORT_HASH}"
+          echo "NIGHTLY_VERSION=${NIGHTLY_VERSION}" >> "$GITHUB_ENV"
+          sed -i "s/^pkgver=.*/pkgver=${NIGHTLY_VERSION}/" PKGBUILD
+
+      - name: Build package
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder .
+          su builder -c "BUILDDIR=/tmp/makepkg-build makepkg -sf --noconfirm"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-x86_64
+          path: safe-discover-*.pkg.tar.zst
+
+  package-aarch64:
+    name: Package (aarch64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set nightly version
+        run: |
+          VERSION=$(grep 'project.*safe-discover' CMakeLists.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          COMMITS=$(git rev-list --count HEAD)
+          SHORT_HASH=$(git rev-parse --short HEAD)
+          echo "NIGHTLY_VERSION=${VERSION}.r${COMMITS}.g${SHORT_HASH}" >> "$GITHUB_ENV"
+
+      - name: Build in ARM container
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD":/src \
+            -e NIGHTLY_VERSION="${NIGHTLY_VERSION}" \
+            lscr.io/linuxserver/archlinux:latest \
+            bash -c '
+              set -e
+              pacman -Syu --noconfirm --needed \
+                base-devel cmake extra-cmake-modules gcc \
+                qt6-base qt6-declarative \
+                kirigami kirigami-addons \
+                kcoreaddons ki18n kconfig knewstuff \
+                polkit
+
+              useradd -m builder
+              echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+              cp -r /src /build && chown -R builder:builder /build
+              cd /build
+
+              sed -i "s/^pkgver=.*/pkgver=${NIGHTLY_VERSION}/" PKGBUILD
+              su builder -c "BUILDDIR=/tmp/makepkg-build makepkg -sf --noconfirm"
+
+              cp safe-discover-*.pkg.tar.zst /src/
+            '
+        continue-on-error: true
+
+      - name: Upload package
+        if: hashFiles('safe-discover-*.pkg.tar.zst') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-aarch64
+          path: safe-discover-*.pkg.tar.zst
+
+  publish-nightly:
+    name: Publish nightly
+    needs: [source, package-x86_64, package-aarch64]
+    if: always() && needs.source.result == 'success' && needs.package-x86_64.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la safe-discover-*
+
+      - name: Update nightly release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Nightly Build
+          prerelease: true
+          make_latest: false
+          body: |
+            Automated nightly build from the latest `main` branch.
+
+            **This is a development build and may be unstable.**
+
+            Built from commit ${{ github.sha }}
+          files: safe-discover-*

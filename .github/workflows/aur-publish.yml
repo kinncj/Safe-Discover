@@ -1,0 +1,35 @@
+name: AUR Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  aur-publish:
+    name: Update AUR package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "TAG_VERSION=${TAG_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Update AUR PKGBUILD version
+        run: |
+          sed -i "s/^pkgver=.*/pkgver=${TAG_VERSION}/" aur/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" aur/PKGBUILD
+
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        with:
+          pkgname: safe-discover
+          pkgbuild: aur/PKGBUILD
+          commit_username: Kinn Coelho Juliao
+          commit_email: kinncj@protonmail.com
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to ${TAG_VERSION}"
+          force_push: true

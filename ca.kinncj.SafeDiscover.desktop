@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Safe Discover
+GenericName=Package Manager
+Comment=Browse, install, and update packages safely
+Exec=safe-discover
+Icon=system-software-install
+Terminal=false
+Categories=System;PackageManager;Qt;KDE;
+Keywords=packages;install;update;flatpak;firmware;aur;pacman;
