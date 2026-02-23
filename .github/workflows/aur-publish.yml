@@ -31,5 +31,5 @@ jobs:
           commit_username: Kinn Coelho Juliao
           commit_email: kinncj@protonmail.com
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: "Update to ${TAG_VERSION}"
+          commit_message: Update to ${{ env.TAG_VERSION }}
           force_push: true
