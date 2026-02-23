@@ -71,6 +71,7 @@ Q_SIGNALS:
 
 private:
     void runStep(int step);
+    void onJobFinished(int jobId, int exitCode, const QString &errorString);
     void setStepLabel(const QString &label);
 
     CommandRunner *m_runner;
@@ -83,6 +84,7 @@ private:
     bool m_checking = false;
     bool m_cancelled = false;
     int m_currentStep = 0;
+    int m_currentJobId = -1;
     QString m_currentStepLabel;
     QVariantList m_pacmanUpdateList;
     QVariantList m_aurUpdateList;

@@ -20,8 +20,11 @@ Kirigami.ApplicationWindow {
                 pageStack.currentItem.cleanup()
             }
         }
-        pageStack.clear()
-        pageStack.push(pageComponent)
+        // Pop sub-pages down to one, then replace.
+        while (pageStack.depth > 1) {
+            pageStack.pop()
+        }
+        pageStack.replace(pageComponent)
     }
 
     globalDrawer: Kirigami.GlobalDrawer {

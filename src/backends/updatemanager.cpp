@@ -23,6 +23,8 @@ UpdateManager::UpdateManager(CommandRunner *runner,
     , m_flatpak(flatpak)
     , m_firmware(firmware)
 {
+    connect(m_runner, &CommandRunner::jobFinished,
+            this, &UpdateManager::onJobFinished);
 }
 
 void UpdateManager::checkAllUpdates()
@@ -178,6 +180,9 @@ void UpdateManager::runSafeUpdate()
 void UpdateManager::cancel()
 {
     m_cancelled = true;
+    if (m_currentJobId >= 0) {
+        m_runner->cancel(m_currentJobId);
+    }
     LogManager::instance()->log(QStringLiteral("Update cancelled by user"));
 }
 
@@ -185,6 +190,7 @@ void UpdateManager::runStep(int step)
 {
     if (m_cancelled) {
         m_running = false;
+        m_currentJobId = -1;
         Q_EMIT runningChanged();
         Q_EMIT updateFinished(false, QStringLiteral("Update cancelled by user"));
         return;
@@ -193,80 +199,101 @@ void UpdateManager::runStep(int step)
     m_currentStep = step;
     Q_EMIT currentStepChanged();
 
-    CommandRunner::Result result;
-
     switch (step) {
     case 1:
         setStepLabel(QStringLiteral("Updating system packages (pacman)..."));
         if (pacmanUpdates() > 0) {
-            result = m_runner->runSync(
-                QStringLiteral("pkexec"),
-                {QStringLiteral("/usr/libexec/safe-discover-helper.sh"),
-                 QStringLiteral("pacman"), QStringLiteral("-Syu"), QStringLiteral("--noconfirm")},
-                300000);
-            if (result.exitCode != 0) {
-                m_running = false;
-                Q_EMIT runningChanged();
-                Q_EMIT updateFinished(false, QStringLiteral("Pacman update failed: ") + result.stderr);
-                return;
-            }
+            m_currentJobId = m_runner->runPrivileged(
+                QStringLiteral("pacman"),
+                {QStringLiteral("-Syu"), QStringLiteral("--noconfirm")},
+                CommandRunner::Embedded, 300000);
+        } else {
+            runStep(2);
         }
-        runStep(2);
         break;
 
     case 2:
         setStepLabel(QStringLiteral("Updating AUR packages (paru)..."));
         if (aurUpdates() > 0) {
-            // AUR updates use terminal mode (interactive)
+            // AUR updates use terminal mode — fire-and-forget (detached process).
+            // Don't track the jobId: Terminal mode emits jobFinished synchronously
+            // inside run(), before the return value can be assigned to m_currentJobId.
             m_runner->run(
                 QStringLiteral("paru"),
                 {QStringLiteral("-Sua"), QStringLiteral("--noconfirm")},
                 CommandRunner::Terminal);
-            // Terminal mode is fire-and-forget, continue to next step
         }
+        // Always advance immediately — terminal is untrackable
         runStep(3);
         break;
 
     case 3:
         setStepLabel(QStringLiteral("Updating Flatpak applications..."));
         if (flatpakUpdates() > 0) {
-            result = m_runner->runSync(
+            m_currentJobId = m_runner->run(
                 QStringLiteral("flatpak"),
                 {QStringLiteral("update"), QStringLiteral("-y")},
-                300000);
-            if (result.exitCode != 0) {
-                m_running = false;
-                Q_EMIT runningChanged();
-                Q_EMIT updateFinished(false, QStringLiteral("Flatpak update failed: ") + result.stderr);
-                return;
-            }
+                CommandRunner::Embedded, 300000);
+        } else {
+            runStep(4);
         }
-        runStep(4);
         break;
 
     case 4:
         setStepLabel(QStringLiteral("Updating firmware..."));
         if (firmwareUpdates() > 0) {
-            result = m_runner->runSync(
-                QStringLiteral("pkexec"),
-                {QStringLiteral("/usr/libexec/safe-discover-helper.sh"),
-                 QStringLiteral("fwupdmgr"), QStringLiteral("update")},
-                180000);
-            if (result.exitCode != 0) {
-                m_running = false;
-                Q_EMIT runningChanged();
-                Q_EMIT updateFinished(false, QStringLiteral("Firmware update failed: ") + result.stderr);
-                return;
-            }
+            m_currentJobId = m_runner->runPrivileged(
+                QStringLiteral("fwupdmgr"),
+                {QStringLiteral("update")},
+                CommandRunner::Embedded, 180000);
+        } else {
+            // All steps completed (nothing to do in this step)
+            m_running = false;
+            m_currentJobId = -1;
+            Q_EMIT runningChanged();
+            setStepLabel(QStringLiteral("Update complete"));
+            Q_EMIT updateFinished(true, QStringLiteral("All updates applied successfully"));
+            LogManager::instance()->log(QStringLiteral("Safe update sequence completed"));
         }
+        break;
+    }
+}
 
+void UpdateManager::onJobFinished(int jobId, int exitCode, const QString &errorString)
+{
+    if (jobId != m_currentJobId || !m_running) {
+        return;
+    }
+    m_currentJobId = -1;
+
+    if (m_cancelled) {
+        m_running = false;
+        Q_EMIT runningChanged();
+        Q_EMIT updateFinished(false, QStringLiteral("Update cancelled by user"));
+        return;
+    }
+
+    if (exitCode != 0) {
+        QString failMsg = m_currentStepLabel + QStringLiteral(" failed");
+        if (!errorString.isEmpty()) {
+            failMsg += QStringLiteral(": ") + errorString;
+        }
+        m_running = false;
+        Q_EMIT runningChanged();
+        Q_EMIT updateFinished(false, failMsg);
+        return;
+    }
+
+    // Advance to next step
+    if (m_currentStep < 4) {
+        runStep(m_currentStep + 1);
+    } else {
         // All steps completed
         m_running = false;
         Q_EMIT runningChanged();
         setStepLabel(QStringLiteral("Update complete"));
         Q_EMIT updateFinished(true, QStringLiteral("All updates applied successfully"));
         LogManager::instance()->log(QStringLiteral("Safe update sequence completed"));
-        break;
     }
 }
 

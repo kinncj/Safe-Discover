@@ -128,7 +128,7 @@ Kirigami.ScrollablePage {
         target: UpdateManager
 
         function onUpdateFinished(success, summary) {
-            page.showPassiveNotification(summary, success ? 5000 : 8000)
+            applicationWindow().showPassiveNotification(summary, success ? 5000 : 8000)
         }
     }
 }
