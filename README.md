@@ -122,4 +122,4 @@ Privileged operations (install, remove, system update) are escalated through Pol
 
 This project is licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
-Copyright (C) 2026 Kinn Coelho Juliao <kinncj@protonmail.com>
+2026 Kinn Coelho Juliao <kinncj@protonmail.com>
