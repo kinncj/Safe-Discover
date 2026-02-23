@@ -7,6 +7,8 @@ import ca.kinncj.SafeDiscover
 Kirigami.ScrollablePage {
     id: page
 
+    property alias detailsPane: detailsPane
+
     title: i18n("Flatpak Applications")
     icon.name: "flatpak-discover"
 
@@ -103,6 +105,18 @@ Kirigami.ScrollablePage {
 
     Connections {
         target: detailsPane
+
+        function onInstallRequested(index) {
+            FlatpakBackend.install(index)
+        }
+
+        function onRemoveRequested(index) {
+            FlatpakBackend.remove(index)
+        }
+    }
+
+    Connections {
+        target: packageList
 
         function onInstallRequested(index) {
             FlatpakBackend.install(index)

@@ -11,6 +11,19 @@ Kirigami.ApplicationWindow {
     minimumWidth: Kirigami.Units.gridUnit * 40
     minimumHeight: Kirigami.Units.gridUnit * 30
 
+    function navigateTo(pageComponent) {
+        if (pageStack.currentItem) {
+            if (pageStack.currentItem.detailsPane) {
+                pageStack.currentItem.detailsPane.close()
+            }
+            if (typeof pageStack.currentItem.cleanup === "function") {
+                pageStack.currentItem.cleanup()
+            }
+        }
+        pageStack.clear()
+        pageStack.push(pageComponent)
+    }
+
     globalDrawer: Kirigami.GlobalDrawer {
         title: i18n("Safe Discover")
         titleIcon: "system-software-install"
@@ -21,30 +34,30 @@ Kirigami.ApplicationWindow {
             Kirigami.Action {
                 text: i18n("Pacman")
                 icon.name: "package-x-generic"
-                onTriggered: pageStack.replace(repoPageComponent)
+                onTriggered: navigateTo(repoPageComponent)
             },
             Kirigami.Action {
                 text: i18n("AUR")
                 icon.name: "package-available"
                 enabled: ToolChecker.paruAvailable
-                onTriggered: pageStack.replace(aurPageComponent)
+                onTriggered: navigateTo(aurPageComponent)
             },
             Kirigami.Action {
                 text: i18n("Flatpak")
                 icon.name: "flatpak-discover"
                 enabled: ToolChecker.flatpakAvailable
-                onTriggered: pageStack.replace(flatpakPageComponent)
+                onTriggered: navigateTo(flatpakPageComponent)
             },
             Kirigami.Action {
                 text: i18n("Firmware")
                 icon.name: "device-notifier"
                 enabled: ToolChecker.fwupdmgrAvailable
-                onTriggered: pageStack.replace(firmwarePageComponent)
+                onTriggered: navigateTo(firmwarePageComponent)
             },
             Kirigami.Action {
                 text: i18n("KDE Add-ons")
                 icon.name: "preferences-desktop-plasma"
-                onTriggered: pageStack.replace(kdeAddonsPageComponent)
+                onTriggered: navigateTo(kdeAddonsPageComponent)
             },
             Kirigami.Action {
                 separator: true
@@ -52,7 +65,7 @@ Kirigami.ApplicationWindow {
             Kirigami.Action {
                 text: i18n("Updates")
                 icon.name: "update-none"
-                onTriggered: pageStack.replace(updatesPageComponent)
+                onTriggered: navigateTo(updatesPageComponent)
             },
             Kirigami.Action {
                 separator: true
@@ -60,7 +73,7 @@ Kirigami.ApplicationWindow {
             Kirigami.Action {
                 text: i18n("Settings")
                 icon.name: "configure"
-                onTriggered: pageStack.replace(settingsPageComponent)
+                onTriggered: navigateTo(settingsPageComponent)
             }
         ]
     }

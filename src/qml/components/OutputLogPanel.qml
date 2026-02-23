@@ -18,8 +18,15 @@ ColumnLayout {
         RowLayout {
             anchors.fill: parent
 
+            QQC2.BusyIndicator {
+                running: CommandRunner.busy
+                visible: running
+                implicitWidth: Kirigami.Units.iconSizes.small
+                implicitHeight: Kirigami.Units.iconSizes.small
+            }
+
             QQC2.Label {
-                text: i18n("Output Log")
+                text: CommandRunner.busy ? i18n("Operation in progress…") : i18n("Output Log")
                 font.bold: true
             }
 
@@ -50,6 +57,12 @@ ColumnLayout {
         }
     }
 
+    QQC2.ProgressBar {
+        Layout.fillWidth: true
+        indeterminate: true
+        visible: CommandRunner.busy
+    }
+
     QQC2.ScrollView {
         Layout.fillWidth: true
         Layout.preferredHeight: logPanel.expanded ? Kirigami.Units.gridUnit * 12 : Kirigami.Units.gridUnit * 4
@@ -76,8 +89,25 @@ ColumnLayout {
 
         function onNewLogEntry(entry) {
             outputArea.text += entry + "\n"
-            // Auto-scroll to bottom
             outputArea.cursorPosition = outputArea.text.length
+        }
+    }
+
+    Connections {
+        target: CommandRunner
+
+        function onOutputLine(jobId, line, isStderr) {
+            outputArea.text += line + "\n"
+            outputArea.cursorPosition = outputArea.text.length
+            if (!logPanel.expanded) {
+                logPanel.expanded = true
+            }
+        }
+
+        function onBusyChanged() {
+            if (CommandRunner.busy && !logPanel.expanded) {
+                logPanel.expanded = true
+            }
         }
     }
 }

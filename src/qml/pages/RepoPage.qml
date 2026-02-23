@@ -7,6 +7,8 @@ import ca.kinncj.SafeDiscover
 Kirigami.ScrollablePage {
     id: page
 
+    property alias detailsPane: detailsPane
+
     title: i18n("Pacman Packages")
     icon.name: "package-x-generic"
 
@@ -91,6 +93,18 @@ Kirigami.ScrollablePage {
 
     Connections {
         target: detailsPane
+
+        function onInstallRequested(index) {
+            PacmanBackend.install(index)
+        }
+
+        function onRemoveRequested(index) {
+            PacmanBackend.remove(index)
+        }
+    }
+
+    Connections {
+        target: packageList
 
         function onInstallRequested(index) {
             PacmanBackend.install(index)

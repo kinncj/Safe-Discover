@@ -7,6 +7,8 @@ import ca.kinncj.SafeDiscover
 Kirigami.ScrollablePage {
     id: page
 
+    property alias detailsPane: detailsPane
+
     title: i18n("AUR Packages")
     icon.name: "package-available"
 
@@ -98,6 +100,18 @@ Kirigami.ScrollablePage {
 
     Connections {
         target: detailsPane
+
+        function onInstallRequested(index) {
+            AurBackend.install(index)
+        }
+
+        function onRemoveRequested(index) {
+            AurBackend.remove(index)
+        }
+    }
+
+    Connections {
+        target: packageList
 
         function onInstallRequested(index) {
             AurBackend.install(index)

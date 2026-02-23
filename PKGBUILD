@@ -1,5 +1,5 @@
 pkgname=safe-discover
-pkgver=0.1.1
+pkgver=0.2.0
 pkgrel=1
 pkgdesc='Kirigami-based package management GUI for Arch Linux (pacman, AUR, Flatpak, fwupd)'
 arch=('x86_64' 'aarch64')

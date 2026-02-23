@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     KAboutData aboutData(
         QStringLiteral("safe-discover"),
         i18n("Safe Discover"),
-        QStringLiteral("0.1.1"),
+        QStringLiteral("0.2.0"),
         i18n("Browse, install, and update packages safely"),
         KAboutLicense::GPL_V3,
         i18n("(c) 2026 Kinn Coelho Juliao")

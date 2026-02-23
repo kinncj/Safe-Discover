@@ -6,6 +6,10 @@
 #include <QStandardPaths>
 #include <QTimer>
 
+#ifndef SAFE_DISCOVER_LIBEXECDIR
+#define SAFE_DISCOVER_LIBEXECDIR "/usr/lib/libexec"
+#endif
+
 CommandRunner *CommandRunner::s_instance = nullptr;
 
 CommandRunner::CommandRunner(QObject *parent)
@@ -151,13 +155,14 @@ int CommandRunner::run(const QString &program, const QStringList &args,
 int CommandRunner::runPrivileged(const QString &program, const QStringList &args,
                                  ExecMode mode, int timeoutMs)
 {
+    // Look for the helper script in the CMake-configured install path first
     QString helper = QStandardPaths::findExecutable(
         QStringLiteral("safe-discover-helper.sh"),
-        {QStringLiteral("/usr/libexec")});
+        {QStringLiteral(SAFE_DISCOVER_LIBEXECDIR)});
 
     if (helper.isEmpty()) {
-        // Fallback: look next to the binary
-        helper = QCoreApplication::applicationDirPath() + QStringLiteral("/../safe-discover-helper.sh");
+        // Development layout: project root relative to build/bin/
+        helper = QCoreApplication::applicationDirPath() + QStringLiteral("/../../safe-discover-helper.sh");
         if (!QFileInfo::exists(helper)) {
             int jobId = nextJobId();
             Q_EMIT jobFinished(jobId, -1, QStringLiteral("Helper script not found"));

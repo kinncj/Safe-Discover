@@ -18,6 +18,9 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.2.0" date="2026-02-23">
+      <description><p>UX improvements: inline install/remove buttons, close button on details pane, operation progress feedback, KDE Add-ons dialog, CI packaging fixes.</p></description>
+    </release>
     <release version="0.1.1" date="2026-02-22">
       <description><p>Initial release.</p></description>
     </release>

@@ -8,6 +8,8 @@ ListView {
     id: listView
 
     signal packageClicked(int index)
+    signal installRequested(int index)
+    signal removeRequested(int index)
 
     clip: true
     currentIndex: -1
@@ -61,6 +63,23 @@ ListView {
                 implicitHeight: Kirigami.Units.iconSizes.small
                 visible: model.installed
                 color: Kirigami.Theme.positiveTextColor
+            }
+
+            QQC2.ToolButton {
+                icon.name: model.installed ? "edit-delete" : "download"
+                text: model.installed ? i18n("Remove") : i18n("Install")
+                display: QQC2.AbstractButton.IconOnly
+                flat: true
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: hovered
+                onClicked: {
+                    listView.currentIndex = index
+                    if (model.installed) {
+                        listView.removeRequested(index)
+                    } else {
+                        listView.installRequested(index)
+                    }
+                }
             }
         }
 

@@ -49,6 +49,10 @@ target_link_libraries(safe-discover PRIVATE
     KF6::NewStuffCore
 )
 
+target_compile_definitions(safe-discover PRIVATE
+    SAFE_DISCOVER_LIBEXECDIR="${KDE_INSTALL_FULL_LIBEXECDIR}"
+)
+
 target_include_directories(safe-discover PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}

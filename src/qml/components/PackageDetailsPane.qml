@@ -57,6 +57,15 @@ Kirigami.OverlaySheet {
                     detailsPane.close()
                 }
             }
+
+            QQC2.ToolButton {
+                icon.name: "dialog-close"
+                text: i18n("Close")
+                display: QQC2.AbstractButton.IconOnly
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: hovered
+                onClicked: detailsPane.close()
+            }
         }
 
         Kirigami.Separator { Layout.fillWidth: true }
