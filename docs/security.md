@@ -53,23 +53,23 @@ The helper script (`safe-discover-helper.sh`) enforces a strict command whitelis
 
 ```mermaid
 graph TD
-    Entry["safe-discover-helper.sh<br/>receives: COMMAND ARG1 ARG2 ..."]
+    Entry[safe-discover-helper.sh receives COMMAND ARG1 ARG2 ...]
 
     Entry --> CheckCmd{Command?}
 
     CheckCmd -->|pacman| CheckPacArg{First Arg?}
     CheckCmd -->|fwupdmgr| CheckFwArg{First Arg?}
-    CheckCmd -->|other| Deny["EXIT 1<br/>Denied"]
+    CheckCmd -->|other| Deny[EXIT 1 - Denied]
 
-    CheckPacArg -->|"-S" / "--sync"| Allow1["exec pacman $@"]
-    CheckPacArg -->|"-Syu"| Allow2["exec pacman $@"]
-    CheckPacArg -->|"-Rns"| Allow3["exec pacman $@"]
+    CheckPacArg -->|-S or --sync| Allow1[exec pacman with args]
+    CheckPacArg -->|-Syu| Allow2[exec pacman with args]
+    CheckPacArg -->|-Rns| Allow3[exec pacman with args]
     CheckPacArg -->|other| Deny
 
-    CheckFwArg -->|"refresh"| Allow4["exec fwupdmgr $@"]
-    CheckFwArg -->|"update"| Allow5["exec fwupdmgr $@"]
-    CheckFwArg -->|"get-devices"| Allow6["exec fwupdmgr $@"]
-    CheckFwArg -->|"get-updates"| Allow7["exec fwupdmgr $@"]
+    CheckFwArg -->|refresh| Allow4[exec fwupdmgr with args]
+    CheckFwArg -->|update| Allow5[exec fwupdmgr with args]
+    CheckFwArg -->|get-devices| Allow6[exec fwupdmgr with args]
+    CheckFwArg -->|get-updates| Allow7[exec fwupdmgr with args]
     CheckFwArg -->|other| Deny
 
     style Deny fill:#f66,color:#fff
