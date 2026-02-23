@@ -51,7 +51,7 @@ Kirigami.Page {
         }
 
         sourceComponent: NewStuff.Page {
-            configFile: root.categories[categoryCombo.currentIndex].knsrc
+            configFile: categoryCombo.currentIndex >= 0 ? root.categories[categoryCombo.currentIndex].knsrc : ""
         }
     }
 }

@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     aboutData.setBugAddress("https://github.com/kinncj/Safe-Discover/issues");
     KAboutData::setApplicationData(aboutData);
     QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("system-software-install")));
+    QApplication::setDesktopFileName(QStringLiteral("ca.kinncj.SafeDiscover"));
 
     // Initialize singletons
     auto *config = SafeDiscoverConfig::self();

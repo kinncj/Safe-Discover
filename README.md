@@ -1,5 +1,11 @@
 # Safe Discover
 
+[![Build & Test](https://github.com/kinncj/Safe-Discover/actions/workflows/build.yml/badge.svg)](https://github.com/kinncj/Safe-Discover/actions/workflows/build.yml)
+[![Nightly](https://github.com/kinncj/Safe-Discover/actions/workflows/nightly.yml/badge.svg)](https://github.com/kinncj/Safe-Discover/actions/workflows/nightly.yml)
+[![Release](https://github.com/kinncj/Safe-Discover/actions/workflows/release.yml/badge.svg)](https://github.com/kinncj/Safe-Discover/actions/workflows/release.yml)
+[![AUR package](https://img.shields.io/aur/version/safe-discover)](https://aur.archlinux.org/packages/safe-discover)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 A Kirigami-based package management GUI for Arch Linux and CachyOS. Unified interface for Pacman, AUR, Flatpak, firmware updates, and KDE add-ons — no PackageKit required.
 
 ![Pacman Packages](docs/screenshots/1_pacman.png)
